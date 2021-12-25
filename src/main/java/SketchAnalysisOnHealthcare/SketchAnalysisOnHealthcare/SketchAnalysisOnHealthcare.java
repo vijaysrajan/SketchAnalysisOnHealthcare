@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
 
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.theta.Sketch;
@@ -15,12 +16,13 @@ import org.apache.datasketches.theta.SetOperation;
 
 public class SketchAnalysisOnHealthcare {
     private static HashMap<String, UpdateSketch> mapOfDiseaseToSketch = new HashMap<>();
+    private static HashMap<String, Integer> mapOfFirstLevelIndex = new HashMap<>();
     private static ArrayList<FISObj> firstLevel = new ArrayList<>();
     private static ArrayList<FISObj> secondLevel = new ArrayList<>();
     private static ArrayList<FISObj> thirdLevel = new ArrayList<>();
     private static ArrayList<FISObj> fourthLevel = new ArrayList<>();
     private static ArrayList<FISObj> fifthLevel = new ArrayList<>();
-    private static int supportLevel = 35;
+    private static int supportLevel = 29;
 
     public static void main(String [] args) throws Exception {
         readFile();
@@ -28,6 +30,7 @@ public class SketchAnalysisOnHealthcare {
         doFISMiningLevel2();
         doFISMiningLevel3AndBeyond(secondLevel, thirdLevel,3);
         doFISMiningLevel3AndBeyond(thirdLevel, fourthLevel,4);
+        doFISMiningLevel3AndBeyond(fourthLevel, fifthLevel, 5);
     }
 
     public static void readFile () throws FileNotFoundException, IOException, ParseException {
@@ -125,9 +128,18 @@ public class SketchAnalysisOnHealthcare {
             }
         }
     }
-    private static void doFISMiningLevel2() {
+
+    private static void sortAndCleanUpFirstLevel() {
         mapOfDiseaseToSketch.forEach((k,v) -> firstLevel.add(new FISObj(k,v)));
         Collections.sort(firstLevel);
+        firstLevel.removeIf(f -> f.getValue().getEstimate() < supportLevel);
+        for (int i = 0; i < firstLevel.size(); i++) {
+            mapOfFirstLevelIndex.put(firstLevel.get(i).getKey(), i);
+        }
+    }
+
+    private static void doFISMiningLevel2() {
+        sortAndCleanUpFirstLevel();
         firstLevel.forEach(o -> System.out.println("1," + o.getKey() + "," + o.getValue().getEstimate()));
 
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
@@ -139,7 +151,7 @@ public class SketchAnalysisOnHealthcare {
                 //System.out.println("i=" + i + ", j=" + j);
                 FISObj f2 = firstLevel.get(i);
                 if (f1.getKey() != f2.getKey()) {
-                    if (f2.getValue().getEstimate() > supportLevel) {
+                    if (f2.getValue().getEstimate() >= supportLevel) {
                         Intersection intersection = SetOperation.builder().buildIntersection();
                         intersection.intersect(f1.getValue());
                         intersection.intersect(f2.getValue());
@@ -153,18 +165,30 @@ public class SketchAnalysisOnHealthcare {
         }
         secondLevel.forEach(f -> {System.out.println("2," +f.getKey() + "," + f.getValue().getEstimate());});
     }
+
+    private static int getLargestIndex(String fis) {
+        String [] items = fis.split(" & ", -1);
+        int maxIndex = -1;
+        for (String item : items) {
+            if (mapOfFirstLevelIndex.get(item) > maxIndex) {
+                maxIndex = mapOfFirstLevelIndex.get(item);
+            }
+        }
+        return maxIndex;
+    }
+
     private static void doFISMiningLevel3AndBeyond(ArrayList<FISObj> currentLevel, ArrayList<FISObj> nextLevel, int level) {
 
         for (int j = 0; j < currentLevel.size(); j++) {
             FISObj f1 = currentLevel.get(j);
-            for (int i = 0; i < firstLevel.size(); i++) {
+            for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
                 FISObj f2 = firstLevel.get(i);
-                if (!f1.getKey().contains(f2.getKey()) && (f2.getValue().getEstimate() > supportLevel)) {
+                if (!f1.getKey().contains(f2.getKey()) && (f2.getValue().getEstimate() >= supportLevel)) {
                     Intersection intersection = SetOperation.builder().buildIntersection();
                     intersection.intersect(f1.getValue());
                     intersection.intersect(f2.getValue());
                     Sketch intersectionResult = intersection.getResult();
-                    if (intersectionResult.getEstimate() > supportLevel) {
+                    if (intersectionResult.getEstimate() >= supportLevel) {
                         nextLevel.add(new FISObj(f1.getKey() + " & " + f2.getKey(), intersectionResult));
                     }
                 }
