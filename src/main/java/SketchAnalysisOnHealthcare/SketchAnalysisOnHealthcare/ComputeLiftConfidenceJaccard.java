@@ -22,17 +22,15 @@ public class ComputeLiftConfidenceJaccard {
         recurseThroughList(workingSet, baseSet, 0);
     }
     private static void recurseThroughList(ArrayList<String> workingSet, ArrayList<String> baseSet, int index) {
-        int length = baseSet.size();
-        for (int i = 0; i < length; i++) {
-            if (baseSet.size() > 1) {
-                if (workingSet.size() > 0 && baseSet.get(0).compareTo(workingSet.get(workingSet.size() - 1)) <0) {
-                    continue;
-                }
-                workingSet.add(baseSet.remove(i));
-                System.out.println(workingSet + " --> " + baseSet);
-                recurseThroughList(workingSet, baseSet, index + 1);
-                baseSet.add(i, workingSet.remove(workingSet.size() - 1));
-            }
+        if (index >= baseSet.size()){
+            return;
+        }
+
+        for (int i = index; i < baseSet.size(); i++) {
+            workingSet.add(baseSet.get(i));
+            System.out.println(workingSet);
+            recurseThroughList(workingSet, baseSet, i + 1);
+            workingSet.remove(workingSet.size() - 1);
         }
     }
 
