@@ -53,6 +53,7 @@ public class SketchAnalysisOnHealthcare {
             String genderKey = header[2] + " = " + lineElements[2];
             String ageGroupKey = "ageGroup = " + getAgeGroup(lineElements[1]);
             //System.out.println(diseaseKey + "," + genderKey + "," + ageGroupKey);
+            updateSketchInMap("", lineElements[0]);
             updateSketchInMap(diseaseKey, lineElements[0]);
             updateSketchInMap(genderKey, lineElements[0]);
             updateSketchInMap(ageGroupKey, lineElements[0]);
@@ -132,7 +133,8 @@ public class SketchAnalysisOnHealthcare {
     private static void sortAndCleanUpFirstLevel() {
         mapOfDiseaseToSketch.forEach((k,v) -> firstLevel.add(new FISObj(k,v)));
         Collections.sort(firstLevel);
-        firstLevel.removeIf(f -> f.getValue().getEstimate() < supportLevel);
+        System.out.println("0," + "," + mapOfDiseaseToSketch.get("").getEstimate());
+        firstLevel.removeIf(f -> f.getValue().getEstimate() < supportLevel || f.getKey().equals(""));
         for (int i = 0; i < firstLevel.size(); i++) {
             mapOfFirstLevelIndex.put(firstLevel.get(i).getKey(), i);
         }
@@ -156,7 +158,7 @@ public class SketchAnalysisOnHealthcare {
                         intersection.intersect(f1.getValue());
                         intersection.intersect(f2.getValue());
                         Sketch intersectionResult = intersection.getResult();
-                        if (intersectionResult.getEstimate() > supportLevel) {
+                        if (intersectionResult.getEstimate() >= supportLevel) {
                             secondLevel.add(new FISObj(f1.getKey() + " & " + f2.getKey(), intersectionResult));
                         }
                     }
