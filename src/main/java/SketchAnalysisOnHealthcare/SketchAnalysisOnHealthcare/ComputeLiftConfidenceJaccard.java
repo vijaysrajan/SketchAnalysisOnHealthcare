@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.HashMap;
 
 public class ComputeLiftConfidenceJaccard {
-    private static HashMap<String,Double> fisHashMapLevelAll = new HashMap<>();
-    private static HashMap<String,Double> fisHashMapLevel1 = new HashMap<>();
-    private static HashMap<String,Integer> fisHashMapLevel1Index = new HashMap<>();
+    private static final HashMap<String,Double> fisHashMapLevelAll = new HashMap<>();
+    private static final HashMap<String,Double> fisHashMapLevel1 = new HashMap<>();
+    private static final HashMap<String,Integer> fisHashMapLevel1Index = new HashMap<>();
     private static ArrayList<String> listOfFISGreaterThanLevel2 = new ArrayList<>();
     private static double total_records = 0;
     private static DecimalFormat df = new DecimalFormat("###.##");
@@ -63,8 +63,11 @@ public class ComputeLiftConfidenceJaccard {
             workingSet.add(baseSet.get(i));
             temp = ((ArrayList<String>) baseSet.clone());
             temp.removeAll(workingSet);
-            System.out.println(buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
-                    + "," + buildFIS(workingSet)  + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
+            System.out.println(baseSet.size() + ","
+                    + buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
+                    + "," + workingSet.size() + ","
+                    + buildFIS(workingSet)  + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
+                    + "," + temp.size()
                     + "," + buildFIS(temp) + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + df.format(confidence(baseSet, workingSet)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));
