@@ -2,32 +2,36 @@ package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 
 import java.io.*;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
 public class ComputeLiftConfidenceJaccard {
     private static final HashMap<String,Double> fisHashMapLevelAll = new HashMap<>();
-    private static final HashMap<String,Double> fisHashMapLevel1 = new HashMap<>();
-    private static final HashMap<String,Integer> fisHashMapLevel1Index = new HashMap<>();
-    private static ArrayList<String> listOfFISGreaterThanLevel2 = new ArrayList<>();
+//    private static final HashMap<String,Double> fisHashMapLevel1 = new HashMap<>();
+//    private static final HashMap<String,Integer> fisHashMapLevel1Index = new HashMap<>();
+    private static final ArrayList<String> listOfFISGreaterThanLevel2 = new ArrayList<>();
     private static double total_records = 0;
-    private static DecimalFormat df = new DecimalFormat("###.##");
+    private static final DecimalFormat df = new DecimalFormat("###.##");
+    private static final String defaultInputFileName = "/Users/vijayrajan/healthcare/FIS_WithoutDecimal_5levels_point75support.csv";
 
     public static void main (String [] args) throws Exception {
-        readFISFile("outputSketch5_fast.csv");
-        listOfFISGreaterThanLevel2.forEach(s -> computeConfidenceAndLift(s));
+        String inputFileName = defaultInputFileName;
+        if (args.length >= 1) {
+            inputFileName = args[0];
+        }
+
+        readFISFile(inputFileName);
+        listOfFISGreaterThanLevel2.forEach(ComputeLiftConfidenceJaccard::computeConfidenceAndLift);
     }
-    private static void readFISFile (String fName)  throws FileNotFoundException, IOException {
-        String fileName = "/Users/vijayrajan/" + fName;
+    private static void readFISFile (String fName)  throws IOException {
         // Creating an object of BufferedReader class
-        File file = new File(fileName);
+        File file = new File(fName);
         BufferedReader br = new BufferedReader(new FileReader(file));
 
         int index = 0;
         int lineNumber = 0;
-        String st = "";
+        String st;
         while ((st = br.readLine()) != null) {
             String [] lineElements = st.split(",", -1);
             if (lineNumber == 0) {
@@ -36,8 +40,8 @@ public class ComputeLiftConfidenceJaccard {
                 continue;
             }
             if (lineElements[0].equals("1")) {
-                fisHashMapLevel1.put(lineElements[1], Double.parseDouble(lineElements[2]));
-                fisHashMapLevel1Index.put(lineElements[1],index);
+//                fisHashMapLevel1.put(lineElements[1], Double.parseDouble(lineElements[2]));
+//                fisHashMapLevel1Index.put(lineElements[1],index);
                 index++;
             } else {
                 listOfFISGreaterThanLevel2.add(lineElements[1]);
@@ -61,7 +65,7 @@ public class ComputeLiftConfidenceJaccard {
                 return;
             }
             workingSet.add(baseSet.get(i));
-            temp = ((ArrayList<String>) baseSet.clone());
+            temp = (ArrayList<String>) baseSet.clone();
             temp.removeAll(workingSet);
             System.out.println(baseSet.size() + ","
                     + buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
@@ -90,7 +94,7 @@ public class ComputeLiftConfidenceJaccard {
     private static double confidence (ArrayList<String> a, ArrayList<String> b) {
         String strA = buildFIS(a);
         String strB = buildFIS(b);
-        return fisHashMapLevelAll.get(strA) * 1.0 / fisHashMapLevelAll.get(strB) * 1.0;
+        return fisHashMapLevelAll.get(strA) * 1.0 / fisHashMapLevelAll.get(strB);
     }
 
     private static double lift (ArrayList<String> base, ArrayList<String> antecedent, ArrayList<String> consequent) {
@@ -108,6 +112,5 @@ public class ComputeLiftConfidenceJaccard {
         Collections.addAll(baseSet, elements);
         ArrayList<String> workingSet = new ArrayList<>();
         recurseThroughList(workingSet, baseSet, temp, 0);
-        return;
     }
 }

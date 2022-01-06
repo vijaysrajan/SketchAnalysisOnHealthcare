@@ -80,7 +80,7 @@ public class ReadInputAndWriteToOutput {
             //create an update sketch and store in hashmap
             String diseaseKey = header[3] + " = " + lineElements[3];
             String genderKey = header[2] + " = " + lineElements[2];
-            String ageGroupKey = "ageGroup = " + getAgeGroup(lineElements[1]);
+            String ageGroupKey = "ageGroup = " + StaticUtils.getAgeGroup(lineElements[1]);
             String diseaseKeyTopLevel = header[3] + " = " + lineElements[3].split("\\.",-1)[0];
 
             updateSketchInMap("", lineElements[0], nominalEntries);
@@ -110,25 +110,5 @@ public class ReadInputAndWriteToOutput {
             mapOfDiseaseToSketchTopLevel.put(key, updateSketch);
         } else updateSketch = mapOfDiseaseToSketchTopLevel.get(key);
         updateSketch.update(patientInfo.hashCode());
-    }
-    private static String getAgeGroup(String dob) throws ParseException {
-        String returnVal;
-        SimpleDateFormat sdf
-                = new SimpleDateFormat("MM/dd/yyyy");
-        Date _dob = sdf.parse(dob);
-        Date today = sdf.parse(sdf.format(new Date()));
-        long difference_In_Time = today.getTime() - _dob.getTime();
-        long difference_In_Years = (difference_In_Time / (1000L * 60 * 60 * 24 * 365));
-        if (difference_In_Years <= 5 ) returnVal = "less_than_5";
-        else if (difference_In_Years <= 10) returnVal = "between_5_and_10";
-        else if (difference_In_Years <= 15) returnVal = "between_10_and_15";
-        else if (difference_In_Years <= 20) returnVal = "between_15_and_20";
-        else if (difference_In_Years <= 30) returnVal = "between_20_and_30";
-        else if (difference_In_Years <= 40) returnVal = "between_30_and_40";
-        else if (difference_In_Years <= 50) returnVal = "between_40_and_50";
-        else
-            if (difference_In_Years <= 60) returnVal = "between_50_and_60";
-            else returnVal = "greater_than_60";
-        return returnVal;
     }
 }

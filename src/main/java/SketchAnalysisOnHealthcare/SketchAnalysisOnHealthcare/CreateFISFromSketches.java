@@ -4,38 +4,14 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.theta.Intersection;
 import org.apache.datasketches.theta.SetOperation;
 import org.apache.datasketches.theta.Sketch;
-import org.apache.datasketches.theta.UpdateSketch;
 import org.apache.datasketches.theta.Sketches;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.*;
 
 public class CreateFISFromSketches {
 
-    static class FISObj implements Comparable<FISObj>{
-        private final String key;
-
-        public String getKey() {
-            return key;
-        }
-
-        public Sketch getValue() {
-            return value;
-        }
-
-        private final Sketch value;
-        public FISObj(String k, Sketch v) {
-            key = k;
-            value = v;
-        }
-
-        @Override
-        public int compareTo(FISObj o) {
-            return Double.compare(o.value.getEstimate(), this.value.getEstimate());
-        }
-    }
     private static final HashMap<String, Integer> mapOfFirstLevelIndex = new HashMap<>();
     private static final double defaultSupportLevelPercentage = 0.5;
     private static final int defaultNumberOfLevels = 5;
