@@ -8,8 +8,6 @@ import java.util.HashMap;
 
 public class ComputeLiftConfidenceJaccard {
     private static final HashMap<String,Double> fisHashMapLevelAll = new HashMap<>();
-//    private static final HashMap<String,Double> fisHashMapLevel1 = new HashMap<>();
-//    private static final HashMap<String,Integer> fisHashMapLevel1Index = new HashMap<>();
     private static final ArrayList<String> listOfFISGreaterThanLevel2 = new ArrayList<>();
     private static double total_records = 0;
     private static final DecimalFormat df = new DecimalFormat("###.##");
@@ -40,8 +38,6 @@ public class ComputeLiftConfidenceJaccard {
                 continue;
             }
             if (lineElements[0].equals("1")) {
-//                fisHashMapLevel1.put(lineElements[1], Double.parseDouble(lineElements[2]));
-//                fisHashMapLevel1Index.put(lineElements[1],index);
                 index++;
             } else {
                 listOfFISGreaterThanLevel2.add(lineElements[1]);
@@ -53,8 +49,7 @@ public class ComputeLiftConfidenceJaccard {
         br.close();
     }
 
-
-    private static void recurseThroughList(ArrayList<String> workingSet, ArrayList<String> baseSet,
+    private static void recurseThroughList2(ArrayList<String> workingSet, ArrayList<String> baseSet,
                                            ArrayList<String> temp, int index) {
         if (index >= baseSet.size()){
             return;
@@ -74,11 +69,13 @@ public class ComputeLiftConfidenceJaccard {
                     + "," + temp.size()
                     + "," + buildFIS(temp) + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + df.format(confidence(baseSet, workingSet)* 100.0)
+                    + "," + df.format(confidence(baseSet, temp)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));
-            recurseThroughList(workingSet, baseSet, temp,i + 1);
+            recurseThroughList2(workingSet, baseSet, temp,i + 1);
             workingSet.remove(workingSet.size() - 1);
         }
     }
+
 
     private static String buildFIS(ArrayList<String> a) {
         StringBuilder strA = new StringBuilder();
@@ -111,6 +108,6 @@ public class ComputeLiftConfidenceJaccard {
         ArrayList<String> baseSet = new ArrayList<>();
         Collections.addAll(baseSet, elements);
         ArrayList<String> workingSet = new ArrayList<>();
-        recurseThroughList(workingSet, baseSet, temp, 0);
+        recurseThroughList2(workingSet, baseSet, temp, 1);
     }
 }
