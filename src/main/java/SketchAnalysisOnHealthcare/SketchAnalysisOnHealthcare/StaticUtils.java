@@ -1,8 +1,22 @@
 package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+
+import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.theta.Sketch;
+import org.apache.datasketches.theta.Sketches;
+//import org.apache.datasketches.theta.UpdateSketch;
 
 public class StaticUtils {
     public static String getAgeGroup(String dob) throws ParseException {
@@ -27,5 +41,25 @@ public class StaticUtils {
         else if (difference_In_Years <= 80) returnVal = "between_75_and_80";
         else returnVal = "greater_than_80";
         return returnVal;
+    }
+
+    public static HashMap<String, Sketch> readFile (String fileName)
+            throws IOException {
+        HashMap<String, Sketch> mapOfDimValToSketch = new HashMap<>();
+        // Creating an object of BufferedReader class
+        File file = new File(fileName);
+        BufferedReader br
+                = new BufferedReader(new FileReader(file));
+        String st;
+        byte[] binSketch;
+        Sketch sketch;
+        while ((st = br.readLine()) != null) {
+            String [] lineElements = st.split(",", -1);
+            binSketch = Base64.getDecoder().decode(lineElements[1].getBytes(StandardCharsets.UTF_8));
+            sketch = Sketches.wrapSketch(Memory.wrap(binSketch));
+            mapOfDimValToSketch.put(lineElements[0], sketch);
+        }
+        br.close();
+        return mapOfDimValToSketch;
     }
 }

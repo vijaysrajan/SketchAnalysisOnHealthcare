@@ -78,11 +78,10 @@ public class ReadInputAndWriteToOutput {
             //create a pivot file for gist
 
             //create an update sketch and store in hashmap
-            String diseaseKey = //header[3] + " = " +
-                    lineElements[3];
-            String genderKey = header[2] + " = " + lineElements[2];
-            String ageGroupKey = "ageGroup = " + StaticUtils.getAgeGroup(lineElements[1]);
-            String diseaseKeyTopLevel = /*header[3] + " = " + */ lineElements[3].split("\\.",-1)[0];
+            String diseaseKey = lineElements[3];
+            String genderKey = header[2] + "=" + lineElements[2];
+            String ageGroupKey = "ageGroup=" + StaticUtils.getAgeGroup(lineElements[1]);
+            String diseaseKeyTopLevel = lineElements[3].split("\\.",-1)[0];
 
             updateSketchInMap("", lineElements[0], nominalEntries);
             updateSketchInMapTopLevel("",lineElements[0], nominalEntries);
