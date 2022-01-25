@@ -15,7 +15,6 @@ public class CreateFISFromSketches {
     private static final HashMap<String, Integer> mapOfFirstLevelIndex = new HashMap<>();
     private static final double defaultSupportLevelPercentage = 0.5;
     private static final int defaultNumberOfLevels = 5;
-    private static int supportLevel = -1;
     private static final String defaultInputFileName = "/Users/vijayrajan/healthcare/SketchFile.txt";
 
     public static void main(String [] args) throws Exception {
@@ -34,11 +33,23 @@ public class CreateFISFromSketches {
         }
         ArrayList<FISObj> firstLevel = new ArrayList<>();
         readFile(inputFileName, supportLevelPercentage, firstLevel);
-        sortAndCleanUpFirstLevel(firstLevel);
+        computeFIS(firstLevel, numberOfLevels, levelN, supportLevelPercentage, null);
+    }
+
+    public static void computeFIS(ArrayList<FISObj> firstLevel,
+                                  int numberOfLevels,
+                                  ArrayList<FISObj> levelN,
+                                  double supportLevelPercentage,
+                                  BufferedWriter outputFileToWrite) {
+
+        sortFirstLevel(firstLevel);
+        int supportLevel = (int)Math.round(supportLevelPercentage / 100 * firstLevel.get(0).getValue().getEstimate());
+
+        cleanUpFirstLevel(firstLevel, outputFileToWrite, supportLevel);
         ArrayList<FISObj> level_N_Minus1 = new ArrayList<>();
-        doFISMiningLevel2(firstLevel, level_N_Minus1);
+        doFISMiningLevel2(firstLevel, level_N_Minus1, outputFileToWrite, supportLevel);
         for (int i = 3; i <= numberOfLevels; i++) {
-            doFISMiningLevel3AndBeyond(firstLevel, level_N_Minus1, levelN, i);
+            doFISMiningLevel3AndBeyond(firstLevel, level_N_Minus1, levelN, i, outputFileToWrite, supportLevel);
             ArrayList<FISObj> temp = level_N_Minus1;
             temp.clear();
             level_N_Minus1 = levelN;
@@ -63,10 +74,10 @@ public class CreateFISFromSketches {
             if (i == 0) {
                 binSketch = Base64.getDecoder().decode(lineElements[1].getBytes(StandardCharsets.UTF_8));
                 sketch = Sketches.wrapSketch(Memory.wrap(binSketch));
-                supportLevel = (int)Math.round(supportLevelPercentage / 100 * sketch.getEstimate());
-                System.out.println("0," + "," +  sketch.getEstimate());
+                StaticUtils.writeToFileOrStdOut(null, 0,
+                        "",sketch.getEstimate());
                 i++;
-                continue;
+                //continue;
             }
             binSketch = Base64.getDecoder().decode(lineElements[1].getBytes(StandardCharsets.UTF_8));
             sketch = Sketches.wrapSketch(Memory.wrap(binSketch));
@@ -75,19 +86,24 @@ public class CreateFISFromSketches {
         br.close();
     }
 
-    private static void sortAndCleanUpFirstLevel(ArrayList<FISObj> firstLevel) {
+    private static void sortFirstLevel(ArrayList<FISObj> firstLevel) {
         Collections.sort(firstLevel);
+    }
+
+    private static void cleanUpFirstLevel(ArrayList<FISObj> firstLevel, BufferedWriter outputFileToWrite, int supportLevel) {
         firstLevel.removeIf(f -> f.getValue().getEstimate() < supportLevel || f.getKey().equals(""));
         for (int i = 0; i < firstLevel.size(); i++) {
             mapOfFirstLevelIndex.put(firstLevel.get(i).getKey(), i);
         }
-        firstLevel.forEach(o -> System.out.println("1," + o.getKey() + "," + o.getValue().getEstimate()));
+        firstLevel.forEach(o -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
+                1, o.getKey(), o.getValue().getEstimate()));
     }
 
-    private static void doFISMiningLevel2(ArrayList<FISObj> firstLevel, ArrayList<FISObj> level_N_Minus1) {
+    private static void doFISMiningLevel2(ArrayList<FISObj> firstLevel, ArrayList<FISObj> level_N_Minus1,
+                                          BufferedWriter outputFileToWrite, int supportLevel) {
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
             FISObj f1 = firstLevel.get(j);
-            if (f1.getValue().getEstimate() < supportLevel) {
+            if (f1.getValue().getEstimate() < supportLevel || f1.getKey().equals("")) {
                 continue;
             }
             for (int i = j + 1; i < firstLevel.size(); i++) {
@@ -106,7 +122,8 @@ public class CreateFISFromSketches {
                 }
             }
         }
-        level_N_Minus1.forEach(f -> System.out.println("2," +f.getKey() + "," + f.getValue().getEstimate()));
+        level_N_Minus1.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
+                2, f.getKey(), f.getValue().getEstimate()));
     }
 
     private static int getLargestIndex(String fis) {
@@ -123,9 +140,11 @@ public class CreateFISFromSketches {
     private static void doFISMiningLevel3AndBeyond(ArrayList<FISObj> firstLevel,
                                                    ArrayList<FISObj> currentLevel,
                                                    ArrayList<FISObj> nextLevel,
-                                                   int level) {
+                                                   int level,
+                                                   BufferedWriter outputFileToWrite, int supportLevel) {
 
         for (FISObj f1 : currentLevel) {
+            if (f1.getKey().equals("")) continue;
             for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
                 FISObj f2 = firstLevel.get(i);
                 if (!f1.getKey().contains(f2.getKey()) && (f2.getValue().getEstimate() >= supportLevel)) {
@@ -139,6 +158,7 @@ public class CreateFISFromSketches {
                 }
             }
         }
-        nextLevel.forEach(f -> System.out.println(level + "," + f.getKey() + "," + f.getValue().getEstimate()));
+        nextLevel.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
+                level, f.getKey(),f.getValue().getEstimate()));
     }
 }

@@ -49,8 +49,8 @@ public class ComputeLiftConfidenceJaccard {
         br.close();
     }
 
-    private static void recurseThroughList2(ArrayList<String> workingSet, ArrayList<String> baseSet,
-                                           ArrayList<String> temp, int index) {
+    private static void explodeFISRuleForAllSubsets(ArrayList<String> workingSet, ArrayList<String> baseSet,
+                                                    ArrayList<String> temp, int index) {
         if (index >= baseSet.size()){
             return;
         }
@@ -71,8 +71,28 @@ public class ComputeLiftConfidenceJaccard {
                     + "," + df.format(confidence(baseSet, workingSet)* 100.0)
                     + "," + df.format(confidence(baseSet, temp)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));
-            recurseThroughList2(workingSet, baseSet, temp,i + 1);
+            explodeFISRuleForAllSubsets(workingSet, baseSet, temp,i + 1);
             workingSet.remove(workingSet.size() - 1);
+        }
+    }
+
+    private static void explodeFISRuleForOneLevelSubsets(ArrayList<String> workingSet,
+                                                         ArrayList<String> baseSet
+                                                         ) {
+        for (int i = 0; i < baseSet.size(); i++) {
+            workingSet.add(baseSet.get(i));
+            ArrayList<String> temp = (ArrayList<String>) baseSet.clone();
+            temp.removeAll(workingSet);
+            System.out.println(baseSet.size() + ","
+                    + buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
+                    + "," + temp.size()
+                    + "," + buildFIS(temp) + "," + fisHashMapLevelAll.get(buildFIS(temp))
+                    + "," + workingSet.size() + ","
+                    + buildFIS(workingSet)  + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
+                    //+ "," + df.format(confidence(baseSet, workingSet)* 100.0)
+                    + "," + df.format(confidence(baseSet, temp)* 100.0)
+                    + "," + df.format(lift(baseSet, workingSet, temp)));
+            workingSet.clear();
         }
     }
 
@@ -108,6 +128,7 @@ public class ComputeLiftConfidenceJaccard {
         ArrayList<String> baseSet = new ArrayList<>();
         Collections.addAll(baseSet, elements);
         ArrayList<String> workingSet = new ArrayList<>();
-        recurseThroughList2(workingSet, baseSet, temp, 1);
+        //explodeFISRuleForAllSubsets(workingSet, baseSet, temp, 1);
+        explodeFISRuleForOneLevelSubsets(workingSet,baseSet);
     }
 }

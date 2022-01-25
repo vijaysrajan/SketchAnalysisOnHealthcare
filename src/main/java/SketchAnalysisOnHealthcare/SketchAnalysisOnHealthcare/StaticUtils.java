@@ -1,10 +1,7 @@
 package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,9 +11,10 @@ import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.theta.Intersection;
+import org.apache.datasketches.theta.SetOperation;
 import org.apache.datasketches.theta.Sketch;
 import org.apache.datasketches.theta.Sketches;
-//import org.apache.datasketches.theta.UpdateSketch;
 
 public class StaticUtils {
     public static String getAgeGroup(String dob) throws ParseException {
@@ -62,4 +60,35 @@ public class StaticUtils {
         br.close();
         return mapOfDimValToSketch;
     }
+
+    public static void writeToFileOrStdOut(BufferedWriter bufferedWriter,
+                                           int level,
+                                           String rule,
+                                           double metric){
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(level);
+            sb.append(",");
+            sb.append(rule);
+            sb.append(",");
+            sb.append(metric);
+
+            if (bufferedWriter != null) {
+                bufferedWriter.write(sb.toString());
+                bufferedWriter.newLine();
+            } else {
+                System.out.println(sb.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Sketch doIntersection(Sketch a, Sketch b) {
+        Intersection intersection = SetOperation.builder().buildIntersection();
+        intersection.intersect(a); //, sketchB);
+        intersection.intersect(b);
+        return intersection.getResult();
+    }
+
 }

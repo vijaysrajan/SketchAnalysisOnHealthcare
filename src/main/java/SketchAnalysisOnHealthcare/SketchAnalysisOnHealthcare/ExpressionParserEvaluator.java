@@ -176,6 +176,14 @@ public class ExpressionParserEvaluator {
         return -1;
     }
 
+    public static Sketch evaluateExpression(String expr, HashMap<String, Sketch> mapOfDimValToSketch )
+            throws Exception {
+        ExpressionParserEvaluator expressionParserEvaluator = new ExpressionParserEvaluator(null);
+        ArrayList<String> postfix = expressionParserEvaluator
+                .convertInfixToPostfix(expressionParserEvaluator.parseExpression(expr));
+         return expressionParserEvaluator.evaluateExpr(postfix,mapOfDimValToSketch);
+    }
+
     public static void main(String [] args) throws Exception {
         ExpressionParserEvaluator expressionParserEvaluator = new ExpressionParserEvaluator(null);
         ArrayList<String> postfix = expressionParserEvaluator
