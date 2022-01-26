@@ -1,9 +1,8 @@
 package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
+
 import org.apache.datasketches.theta.Sketch;
 import org.apache.datasketches.theta.Intersection;
 import org.apache.datasketches.theta.SetOperation;
@@ -15,10 +14,8 @@ public class ExpressionParserEvaluator {
 
     //order is important for operator precedence
     private final String [] operators = new String[]{"(", ")", "!", "&", "|"};
-    private final HashMap<String, Sketch> operands;
 
     public ExpressionParserEvaluator(HashMap<String, Sketch> operands) {
-        this.operands = operands;
     }
 
     public ArrayList<String> parseExpression(String expr) {
@@ -37,9 +34,7 @@ public class ExpressionParserEvaluator {
                     retVal.add(token.toString());
                     token = new StringBuilder();
                 }
-                continue;
             } else if (c == '\\') {
-                continue;
             } else {
                 token.append(c);
             }
@@ -116,9 +111,6 @@ public class ExpressionParserEvaluator {
                     not.notB(s);
                     conversionStack.push(not.getResult(true));
                 } else {
-                    if (conversionStack.isEmpty()) {
-                        throw new Exception("Binary operator " + token + "needs two operands");
-                    }
                     if (token.equals("|") || token.equals("&")) {
                         Sketch sketchA = conversionStack.pop();
                         Sketch sketchB = conversionStack.pop();
@@ -127,7 +119,7 @@ public class ExpressionParserEvaluator {
                             union.union(sketchA);
                             union.union(sketchB);
                             conversionStack.push(union.getResult());
-                        } else if (token.equals("&")) {
+                        } else { //if (token.equals("&")) {
                             Intersection intersection = SetOperation.builder().buildIntersection();
                             intersection.intersect(sketchA); //, sketchB);
                             intersection.intersect(sketchB);
@@ -193,4 +185,10 @@ public class ExpressionParserEvaluator {
         System.out.println(expressionParserEvaluator.evaluateExpr(postfix,mapOfDimValToSketch).getEstimate());
     }
 
+    public static ArrayList<String> getOperands(String expr) {
+        ExpressionParserEvaluator expressionParserEvaluator = new ExpressionParserEvaluator(null);
+        ArrayList<String> retVal = expressionParserEvaluator.parseExpression(expr);
+        retVal.removeAll(Arrays.asList(expressionParserEvaluator.operators));
+        return retVal;
+    }
 }

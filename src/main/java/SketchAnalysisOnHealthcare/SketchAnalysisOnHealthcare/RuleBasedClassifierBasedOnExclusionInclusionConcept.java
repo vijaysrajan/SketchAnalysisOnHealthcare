@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class RuleBasedClassifierBasedOnExclusionInclusionConcept {
 
@@ -65,6 +66,8 @@ public class RuleBasedClassifierBasedOnExclusionInclusionConcept {
         applyFilter(filterExpr, mapOfDimValToSketchFiltered);
         applyReverseFilter(filterExpr, mapOfDimValToSketchReverseFiltered);
 
+        ArrayList<String> filterOperands =
+                ExpressionParserEvaluator.getOperands(filterExpr);
         ArrayList<FISObj> firstLevelFiltered = new ArrayList<>();
         mapOfDimValToSketchFiltered.forEach((k,v) -> {
             if (v.getEstimate() > 0) {
@@ -78,6 +81,20 @@ public class RuleBasedClassifierBasedOnExclusionInclusionConcept {
                 firstLevelReverseFiltered.add(new FISObj(k,v));
             }
         });
+
+        //remove operands of the filter from the FirstLevels
+        for (String s : filterOperands) {
+           for (int i = 0; i < firstLevelFiltered.size(); i++) {
+               if (s.equals(firstLevelFiltered.get(i).getKey())) {
+                   firstLevelFiltered.remove(i);
+               }
+           }
+            for (int i = 0; i < firstLevelReverseFiltered.size(); i++) {
+                if (s.equals(firstLevelReverseFiltered.get(i).getKey())) {
+                    firstLevelReverseFiltered.remove(i);
+                }
+            }
+        }
 
         //computeFIS and store for both forward and reverse filters
         createFIS(firstLevelFiltered, numberOfLevels, new ArrayList<>(), supportLevelPercentage, FISFilteredFileName);
@@ -100,18 +117,15 @@ public class RuleBasedClassifierBasedOnExclusionInclusionConcept {
     public static void applyFilter(String expr,
                                    HashMap<String, Sketch> mapOfDimValToSketch) throws Exception {
         Sketch filter = ExpressionParserEvaluator.evaluateExpression(expr, mapOfDimValToSketch);
-        mapOfDimValToSketch.forEach((k,v) -> {
-            mapOfDimValToSketch.put(k, StaticUtils.doIntersection(v, filter));
-        });
+        mapOfDimValToSketch.forEach((k,v) -> mapOfDimValToSketch.put(k, StaticUtils.doIntersection(v, filter)));
     }
 
     public static void applyReverseFilter(String expr,
                                           HashMap<String, Sketch> mapOfDimValToSketch) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        sb.append("!(");
-        sb.append(expr);
-        sb.append(")");
-        applyFilter(sb.toString(), mapOfDimValToSketch);
+        String sb = "!(" +
+                expr +
+                ")";
+        applyFilter(sb, mapOfDimValToSketch);
     }
 
 
