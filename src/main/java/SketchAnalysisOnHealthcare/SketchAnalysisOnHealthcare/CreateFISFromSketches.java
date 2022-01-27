@@ -123,20 +123,7 @@ public class CreateFISFromSketches {
             }
         }
         level_N_Minus1.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                2, orderTheFIS(f.getKey()), f.getValue().getEstimate()));
-    }
-    static final StringBuilder orderedSB = new StringBuilder();
-    private static String orderTheFIS (String FIS) {
-        orderedSB.delete(0,orderedSB.length());
-        String [] arrayFISComponents = FIS.split(" & ", -1);
-        List<String> list = Arrays.asList(arrayFISComponents);
-        Collections.sort(list);
-        for (int i = 0; i < list.size() - 1; i++) {
-            orderedSB.append(list.get(i));
-            orderedSB.append(" & ");
-        }
-        orderedSB.append(list.get(list.size() -1));
-        return orderedSB.toString();
+                2, StaticUtils.orderTheFIS(f.getKey()), f.getValue().getEstimate()));
     }
 
     private static int getLargestIndex(String fis) {
@@ -172,6 +159,6 @@ public class CreateFISFromSketches {
             }
         }
         nextLevel.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                level, orderTheFIS(f.getKey()),f.getValue().getEstimate()));
+                level, StaticUtils.orderTheFIS(f.getKey()),f.getValue().getEstimate()));
     }
 }

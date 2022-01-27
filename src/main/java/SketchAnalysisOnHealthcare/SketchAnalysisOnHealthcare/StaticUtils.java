@@ -5,10 +5,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.theta.Intersection;
@@ -89,6 +86,22 @@ public class StaticUtils {
         intersection.intersect(a); //, sketchB);
         intersection.intersect(b);
         return intersection.getResult();
+    }
+
+    static final StringBuilder orderedSB = new StringBuilder();
+    static final ArrayList<String> orderedFISList = new ArrayList<>();
+    public static String orderTheFIS (String FIS) {
+        orderedSB.delete(0,orderedSB.length());
+        orderedFISList.clear();
+        String [] arrayFISComponents = FIS.split(" & ", -1);
+        Collections.addAll(orderedFISList, arrayFISComponents);
+        Collections.sort(orderedFISList);
+        for (int i = 0; i < orderedFISList.size() - 1; i++) {
+            orderedSB.append(orderedFISList.get(i));
+            orderedSB.append(" & ");
+        }
+        orderedSB.append(orderedFISList.get(orderedFISList.size() -1));
+        return orderedSB.toString();
     }
 
 }

@@ -12,15 +12,26 @@ public class ComputeLiftConfidenceJaccard {
     private static double total_records = 0;
     private static final DecimalFormat df = new DecimalFormat("###.##");
     private static final String defaultInputFileName = "/Users/vijayrajan/healthcare/FIS_WithoutDecimal_5levels_point75support.csv";
+    private static final boolean defaultExplode = true;
 
     public static void main (String [] args) throws Exception {
         String inputFileName = defaultInputFileName;
         if (args.length >= 1) {
             inputFileName = args[0];
         }
+        boolean explode = defaultExplode;
+        if (args.length >= 2) {
+            if (args[1].equalsIgnoreCase("true")
+               || args[1].equalsIgnoreCase("false")) {
+                explode = Boolean.parseBoolean(args[1]);
+            } else {
+                explode = false;
+            }
+        }
 
         readFISFile(inputFileName);
-        listOfFISGreaterThanLevel2.forEach(ComputeLiftConfidenceJaccard::computeConfidenceAndLift);
+        boolean finalExplode = explode;
+        listOfFISGreaterThanLevel2.forEach(s -> computeConfidenceAndLift(s, finalExplode));
     }
     private static void readFISFile (String fName)  throws IOException {
         // Creating an object of BufferedReader class
@@ -63,11 +74,14 @@ public class ComputeLiftConfidenceJaccard {
             temp = (ArrayList<String>) baseSet.clone();
             temp.removeAll(workingSet);
             System.out.println(baseSet.size() + ","
-                    + buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
+                    + StaticUtils.orderTheFIS(buildFIS(baseSet))
+                    + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
                     + "," + workingSet.size() + ","
-                    + buildFIS(workingSet)  + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
+                    + StaticUtils.orderTheFIS(buildFIS(workingSet))
+                    + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
                     + "," + temp.size()
-                    + "," + buildFIS(temp) + "," + fisHashMapLevelAll.get(buildFIS(temp))
+                    + "," + StaticUtils.orderTheFIS(buildFIS(temp))
+                    + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + df.format(confidence(baseSet, workingSet)* 100.0)
                     + "," + df.format(confidence(baseSet, temp)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));
@@ -84,18 +98,19 @@ public class ComputeLiftConfidenceJaccard {
             ArrayList<String> temp = (ArrayList<String>) baseSet.clone();
             temp.removeAll(workingSet);
             System.out.println(baseSet.size() + ","
-                    + buildFIS(baseSet) + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
+                    + StaticUtils.orderTheFIS(buildFIS(baseSet))
+                    + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
                     + "," + temp.size()
-                    + "," + buildFIS(temp) + "," + fisHashMapLevelAll.get(buildFIS(temp))
+                    + "," + StaticUtils.orderTheFIS(buildFIS(temp))
+                    + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + workingSet.size() + ","
-                    + buildFIS(workingSet)  + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
-                    //+ "," + df.format(confidence(baseSet, workingSet)* 100.0)
+                    + StaticUtils.orderTheFIS(buildFIS(workingSet))
+                    + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
                     + "," + df.format(confidence(baseSet, temp)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));
             workingSet.clear();
         }
     }
-
 
     private static String buildFIS(ArrayList<String> a) {
         StringBuilder strA = new StringBuilder();
@@ -122,13 +137,16 @@ public class ComputeLiftConfidenceJaccard {
                 ((fisHashMapLevelAll.get(strConsequent) / total_records) *  (fisHashMapLevelAll.get(strAntecedent) / total_records));
     }
 
-    private static void computeConfidenceAndLift(String fis) {
+    private static void computeConfidenceAndLift(String fis, boolean explode) {
         String [] elements = fis.split(" & ", -1);
         ArrayList<String> temp = new ArrayList<>();
         ArrayList<String> baseSet = new ArrayList<>();
         Collections.addAll(baseSet, elements);
         ArrayList<String> workingSet = new ArrayList<>();
-        //explodeFISRuleForAllSubsets(workingSet, baseSet, temp, 1);
-        explodeFISRuleForOneLevelSubsets(workingSet,baseSet);
+        if (explode) {
+            explodeFISRuleForAllSubsets(workingSet, baseSet, temp, 1);
+        } else {
+            explodeFISRuleForOneLevelSubsets(workingSet, baseSet);
+        }
     }
 }
