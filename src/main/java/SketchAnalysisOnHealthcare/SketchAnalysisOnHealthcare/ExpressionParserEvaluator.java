@@ -45,14 +45,13 @@ public class ExpressionParserEvaluator {
         return retVal;
     }
 
-    public ArrayList<String> convertInfixToPostfix(ArrayList<String> tokens) {
+    public ArrayList<String> convertInfixToPostfix(ArrayList<String> tokens) throws Exception {
         ArrayList<String> retVal = new ArrayList<>();
         Stack<String> conversionStack = new Stack<>();
-        boolean unclosedParenthesis = false;
+        int unclosedParenthesis = 0;
         for (String token : tokens) {
             if (isOperator(token)) {
                 if (!token.equals(")")) {
-                    unclosedParenthesis = true;
                     while (!conversionStack.isEmpty()
                             && getOperatorPrecedence(conversionStack.peek()) < getOperatorPrecedence(token)
                             && !conversionStack.peek().equals("(")
@@ -60,32 +59,46 @@ public class ExpressionParserEvaluator {
                         retVal.add(conversionStack.pop());
                     }
                     conversionStack.push(token);
-                } else {
+                } else { // == ")"
+                    unclosedParenthesis--;
                     String popToken = conversionStack.pop();
-                    while (!popToken.equals("(") && unclosedParenthesis) {
+                    if (popToken.equals("(")) {
+                        unclosedParenthesis++;
+                    }
+                    while (!popToken.equals("(")) {
                         retVal.add(popToken);
                         if (!conversionStack.isEmpty()) {
                             popToken = conversionStack.pop();
+                            if (popToken.equals("(")) {
+                                unclosedParenthesis++;
+                            }
                         } else {
                             break;
                         }
                     }
-                    unclosedParenthesis = false;
                 }
             } else {
                 retVal.add(token);
             }
             //For Debugging
-            //            for (int j = 0; j <= i; j++) {
-            //                System.out.print(tokens[j] + " ");
-            //            }
-            //            System.out.print( " ~ " + token + " ~ ");
-            //            System.out.print(conversionStack.toString());
-            //            System.out.println( " ~ " + retVal.toString());
+            //for (int j = 0; j <= i; j++) {
+                 //System.out.print(tokens.get(j) + " ");
+            //}
+            //System.out.print( " ~ " + token + " ~ ");
+            //System.out.print(conversionStack.toString());
+            //System.out.println( " ~ " + retVal.toString());
         }
 
         while(!conversionStack.isEmpty()) {
-            retVal.add(conversionStack.pop());
+            String stackToken = conversionStack.pop();
+            if (!stackToken.equals("(")) {
+                retVal.add(stackToken);
+            } else {
+                unclosedParenthesis++;
+            }
+        }
+        if (unclosedParenthesis != 0) {
+            throw new Exception("unmatched brackets. " + unclosedParenthesis);
         }
 
         return retVal;
@@ -173,7 +186,7 @@ public class ExpressionParserEvaluator {
         ExpressionParserEvaluator expressionParserEvaluator = new ExpressionParserEvaluator(null);
         ArrayList<String> postfix = expressionParserEvaluator
                 .convertInfixToPostfix(expressionParserEvaluator.parseExpression(expr));
-         return expressionParserEvaluator.evaluateExpr(postfix,mapOfDimValToSketch);
+        return expressionParserEvaluator.evaluateExpr(postfix,mapOfDimValToSketch);
     }
 
     public static void main(String [] args) throws Exception {
