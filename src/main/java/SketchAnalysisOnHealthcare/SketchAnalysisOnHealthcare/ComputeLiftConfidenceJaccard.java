@@ -74,13 +74,13 @@ public class ComputeLiftConfidenceJaccard {
             temp = (ArrayList<String>) baseSet.clone();
             temp.removeAll(workingSet);
             System.out.println(baseSet.size() + ","
-                    + StaticUtils.orderTheFIS(buildFIS(baseSet))
+                    + StaticUtils.orderTheFIS(buildFIS(baseSet), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
                     + "," + workingSet.size() + ","
-                    + StaticUtils.orderTheFIS(buildFIS(workingSet))
+                    + StaticUtils.orderTheFIS(buildFIS(workingSet), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
                     + "," + temp.size()
-                    + "," + StaticUtils.orderTheFIS(buildFIS(temp))
+                    + "," + StaticUtils.orderTheFIS(buildFIS(temp), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + df.format(confidence(baseSet, workingSet)* 100.0)
                     + "," + df.format(confidence(baseSet, temp)* 100.0)
@@ -98,13 +98,13 @@ public class ComputeLiftConfidenceJaccard {
             ArrayList<String> temp = (ArrayList<String>) baseSet.clone();
             temp.removeAll(workingSet);
             System.out.println(baseSet.size() + ","
-                    + StaticUtils.orderTheFIS(buildFIS(baseSet))
+                    + StaticUtils.orderTheFIS(buildFIS(baseSet), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(baseSet))
                     + "," + temp.size()
-                    + "," + StaticUtils.orderTheFIS(buildFIS(temp))
+                    + "," + StaticUtils.orderTheFIS(buildFIS(temp), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(temp))
                     + "," + workingSet.size() + ","
-                    + StaticUtils.orderTheFIS(buildFIS(workingSet))
+                    + StaticUtils.orderTheFIS(buildFIS(workingSet), " & ")
                     + "," + fisHashMapLevelAll.get(buildFIS(workingSet))
                     + "," + df.format(confidence(baseSet, temp)* 100.0)
                     + "," + df.format(lift(baseSet, workingSet, temp)));

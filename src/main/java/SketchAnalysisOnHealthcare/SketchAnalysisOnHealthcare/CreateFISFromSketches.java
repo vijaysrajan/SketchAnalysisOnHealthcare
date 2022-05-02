@@ -75,7 +75,7 @@ public class CreateFISFromSketches {
                 binSketch = Base64.getDecoder().decode(lineElements[1].getBytes(StandardCharsets.UTF_8));
                 sketch = Sketches.wrapSketch(Memory.wrap(binSketch));
                 StaticUtils.writeToFileOrStdOut(null, 0,
-                        "",sketch.getEstimate());
+                        "",Math.round(sketch.getEstimate()));
                 i++;
                 //continue;
             }
@@ -96,19 +96,26 @@ public class CreateFISFromSketches {
             mapOfFirstLevelIndex.put(firstLevel.get(i).getKey(), i);
         }
         firstLevel.forEach(o -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                1, o.getKey(), o.getValue().getEstimate()));
+                1, o.getKey(), Math.round(o.getValue().getEstimate())));
     }
 
     private static void doFISMiningLevel2(ArrayList<FISObj> firstLevel, ArrayList<FISObj> level_N_Minus1,
                                           BufferedWriter outputFileToWrite, int supportLevel) {
+        HashSet<String> dimensionsToAvoidJoins = new HashSet<>();
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
+
             FISObj f1 = firstLevel.get(j);
+            dimensionsToAvoidJoins.clear();
+            getConstituentDimVal (f1.getKey(), dimensionsToAvoidJoins);
             if (f1.getValue().getEstimate() < supportLevel || f1.getKey().equals("")) {
                 continue;
             }
             for (int i = j + 1; i < firstLevel.size(); i++) {
-
                 FISObj f2 = firstLevel.get(i);
+                if (dimensionsToAvoidJoins.contains(getDimension(f2.getKey()))) {
+                    //System.out.println(f2.getKey() + " *** " + f1.getKey());
+                    continue;
+                }
                 if (!Objects.equals(f1.getKey(), f2.getKey())) {
                     if (f2.getValue().getEstimate() >= supportLevel) {
                         Intersection intersection = SetOperation.builder().buildIntersection();
@@ -123,7 +130,7 @@ public class CreateFISFromSketches {
             }
         }
         level_N_Minus1.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                2, StaticUtils.orderTheFIS(f.getKey()), f.getValue().getEstimate()));
+                2, StaticUtils.orderTheFIS(f.getKey(), " & "), Math.round(f.getValue().getEstimate())));
     }
 
     private static int getLargestIndex(String fis) {
@@ -143,22 +150,49 @@ public class CreateFISFromSketches {
                                                    int level,
                                                    BufferedWriter outputFileToWrite, int supportLevel) {
 
+        HashSet<String> dimensionsToAvoidJoins = new HashSet<>();
         for (FISObj f1 : currentLevel) {
             if (f1.getKey().equals("")) continue;
-            for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
-                FISObj f2 = firstLevel.get(i);
-                if (!f1.getKey().contains(f2.getKey()) && (f2.getValue().getEstimate() >= supportLevel)) {
-                    Intersection intersection = SetOperation.builder().buildIntersection();
-                    intersection.intersect(f1.getValue());
-                    intersection.intersect(f2.getValue());
-                    Sketch intersectionResult = intersection.getResult();
-                    if (intersectionResult.getEstimate() >= supportLevel) {
-                        nextLevel.add(new FISObj(f1.getKey() + " & " + f2.getKey(), intersectionResult));
+                //avoid intersection between values for the same dimension. This should speed things up much more
+                dimensionsToAvoidJoins.clear();
+                getConstituentDimVal (f1.getKey(), dimensionsToAvoidJoins);
+
+                for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
+                    FISObj f2 = firstLevel.get(i);
+                    if (dimensionsToAvoidJoins.contains(getDimension(f2.getKey()))) {
+                        //System.out.println(f2.getKey() + " *** " + f1.getKey());
+                        continue;
                     }
-                }
+                    if (!f1.getKey().contains(f2.getKey()) && (f2.getValue().getEstimate() >= supportLevel)) {
+                        Intersection intersection = SetOperation.builder().buildIntersection();
+                        intersection.intersect(f1.getValue());
+                        intersection.intersect(f2.getValue());
+                        Sketch intersectionResult = intersection.getResult();
+                        if (intersectionResult.getEstimate() >= supportLevel) {
+                            nextLevel.add(new FISObj(f1.getKey() + " & " + f2.getKey(), intersectionResult));
+                        }
+                    }
             }
         }
         nextLevel.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                level, StaticUtils.orderTheFIS(f.getKey()),f.getValue().getEstimate()));
+                level, StaticUtils.orderTheFIS(f.getKey(), " & "),Math.round(f.getValue().getEstimate())));
     }
+
+    private static void getConstituentDimVal (String itemSet, HashSet<String> set) {
+        String [] itemSetParts = itemSet.split(" & ", -1);
+        for( String part : itemSetParts) {
+            set.add(getDimension(part));
+        }
+    }
+    private static String getDimension(String itemSet) {
+        String [] parts = itemSet.split("=", -1);
+        if (parts.length != 2) {
+            return null;
+        } else {
+            return parts[0];
+        }
+    }
+
+
+
 }
