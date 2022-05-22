@@ -75,7 +75,9 @@ public class CreateFISFromSketches {
                 binSketch = Base64.getDecoder().decode(lineElements[1].getBytes(StandardCharsets.UTF_8));
                 sketch = Sketches.wrapSketch(Memory.wrap(binSketch));
                 StaticUtils.writeToFileOrStdOut(null, 0,
-                        "",Math.round(sketch.getEstimate()));
+                        "",Math.round(sketch.getEstimate()),
+                        Math.round(sketch.getLowerBound(2)),
+                        Math.round(sketch.getUpperBound(2)));
                 i++;
                 //continue;
             }
@@ -91,19 +93,21 @@ public class CreateFISFromSketches {
     }
 
     private static void cleanUpFirstLevel(ArrayList<FISObj> firstLevel, BufferedWriter outputFileToWrite, int supportLevel) {
+
         firstLevel.removeIf(f -> f.getValue().getEstimate() < supportLevel || f.getKey().equals(""));
         for (int i = 0; i < firstLevel.size(); i++) {
             mapOfFirstLevelIndex.put(firstLevel.get(i).getKey(), i);
         }
         firstLevel.forEach(o -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                1, o.getKey(), Math.round(o.getValue().getEstimate())));
+                1, o.getKey(), Math.round(o.getValue().getEstimate()),
+                Math.round((o.getValue().getLowerBound(2))),
+                Math.round((o.getValue().getUpperBound(2)))));
     }
 
     private static void doFISMiningLevel2(ArrayList<FISObj> firstLevel, ArrayList<FISObj> level_N_Minus1,
                                           BufferedWriter outputFileToWrite, int supportLevel) {
         HashSet<String> dimensionsToAvoidJoins = new HashSet<>();
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
-
             FISObj f1 = firstLevel.get(j);
             dimensionsToAvoidJoins.clear();
             getConstituentDimVal (f1.getKey(), dimensionsToAvoidJoins);
@@ -130,7 +134,10 @@ public class CreateFISFromSketches {
             }
         }
         level_N_Minus1.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                2, StaticUtils.orderTheFIS(f.getKey(), " & "), Math.round(f.getValue().getEstimate())));
+                2, StaticUtils.orderTheFIS(f.getKey(), " & "),
+                Math.round(f.getValue().getEstimate()),
+                Math.round((f.getValue().getLowerBound(2))),
+                Math.round((f.getValue().getUpperBound(2)))));
     }
 
     private static int getLargestIndex(String fis) {
@@ -175,13 +182,19 @@ public class CreateFISFromSketches {
             }
         }
         nextLevel.forEach(f -> StaticUtils.writeToFileOrStdOut(outputFileToWrite,
-                level, StaticUtils.orderTheFIS(f.getKey(), " & "),Math.round(f.getValue().getEstimate())));
+                level, StaticUtils.orderTheFIS(f.getKey(), " & "),
+                Math.round(f.getValue().getEstimate()),
+                Math.round((f.getValue().getLowerBound(2))),
+                Math.round((f.getValue().getUpperBound(2)))));
     }
 
     private static void getConstituentDimVal (String itemSet, HashSet<String> set) {
         String [] itemSetParts = itemSet.split(" & ", -1);
         for( String part : itemSetParts) {
-            set.add(getDimension(part));
+            String s = getDimension(part);
+            if (s != null) {
+                set.add(s);
+            }
         }
     }
     private static String getDimension(String itemSet) {
