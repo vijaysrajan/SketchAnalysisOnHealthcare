@@ -126,15 +126,28 @@ public class ComputeLiftConfidenceJaccard {
     private static double confidence (ArrayList<String> a, ArrayList<String> b) {
         String strA = buildFIS(a);
         String strB = buildFIS(b);
-        return fisHashMapLevelAll.get(strA) * 1.0 / fisHashMapLevelAll.get(strB);
+        try {
+            return fisHashMapLevelAll.get(strA) * 1.0 / fisHashMapLevelAll.get(strB);
+        } catch (Exception e) {
+            //System.out.println("strA = " + strA);
+            //System.out.println("strB = " + strB);
+            return 0;
+        }
     }
 
     private static double lift (ArrayList<String> base, ArrayList<String> antecedent, ArrayList<String> consequent) {
         String strBase = buildFIS(base);
         String strConsequent = buildFIS(consequent);
         String strAntecedent = buildFIS(antecedent);
-        return  fisHashMapLevelAll.get(strBase)/total_records /
-                ((fisHashMapLevelAll.get(strConsequent) / total_records) *  (fisHashMapLevelAll.get(strAntecedent) / total_records));
+        try {
+            return fisHashMapLevelAll.get(strBase) / total_records /
+                    ((fisHashMapLevelAll.get(strConsequent) / total_records) * (fisHashMapLevelAll.get(strAntecedent) / total_records));
+        } catch (Exception e) {
+            //System.out.println("strBase = " + strBase);
+            //System.out.println("strConsequent = " + strConsequent);
+            //System.out.println("strAntecedent = " + strAntecedent);
+            return 0.0;
+        }
     }
 
     private static void computeConfidenceAndLift(String fis, boolean explode) {
