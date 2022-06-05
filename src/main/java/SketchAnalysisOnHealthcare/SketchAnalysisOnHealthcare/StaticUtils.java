@@ -70,11 +70,15 @@ public class StaticUtils {
      * @param level
      * @param rule
      * @param metric
+     * @param lowerBoundError
+     * @param upperBoundError
      */
     public static void writeToFileOrStdOut(BufferedWriter bufferedWriter,
                                            int level,
                                            String rule,
-                                           double metric){
+                                           double metric,
+                                           double lowerBoundError,
+                                           double upperBoundError) {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(level);
@@ -82,6 +86,10 @@ public class StaticUtils {
             sb.append(rule);
             sb.append(",");
             sb.append(metric);
+            sb.append(",");
+            sb.append(lowerBoundError);
+            sb.append(",");
+            sb.append(upperBoundError);
 
             if (bufferedWriter != null) {
                 bufferedWriter.write(sb.toString());
@@ -185,5 +193,32 @@ public class StaticUtils {
 
     public static void main(String [] args) throws Exception {
         reOrderFISInAFile(args[0], args[1]);
+    }
+
+    static void getConstituentDimension(String itemSet, HashSet<String> set) {
+        String [] itemSetParts = itemSet.split(" & ", -1);
+        for( String part : itemSetParts) {
+            String s = getDimension(part);
+            if (s != null) {
+                set.add(s);
+            }
+        }
+    }
+
+    static void getConstituentDimVal(String itemSet, HashSet<String> set, String separator) {
+        String [] itemSetParts = itemSet.split(separator, -1);
+        for(String part : itemSetParts) {
+            set.add(part);
+        }
+    }
+
+
+    static String getDimension(String itemSet) {
+        String [] parts = itemSet.split("=", -1);
+        if (parts.length != 2) {
+            return null;
+        } else {
+            return parts[0];
+        }
     }
 }

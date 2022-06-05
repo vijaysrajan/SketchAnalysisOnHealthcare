@@ -22,6 +22,7 @@ public class ExplodeDriveUAggregateWithUUID {
         String inputFileName = defaultInputFileName;
         String rawDataFileName = defaultRawDataFileName;
         String dimValSketchFile = defaultDimValSketchFile;
+        int multiplicationFactor = 1;
         int bitsForNominalEntries = defaultBitsFrNominalEntry;
         if (args.length >= 1) {
             inputFileName = args[0];
@@ -35,12 +36,15 @@ public class ExplodeDriveUAggregateWithUUID {
         if (args.length >= 4) {
             bitsForNominalEntries = Integer.parseInt(args[3]);
         }
-        readInputFile(inputFileName, rawDataFileName);
+        if (args.length >= 5) {
+            multiplicationFactor = Integer.parseInt(args[4]);
+        }
+        readInputFile(inputFileName, rawDataFileName, multiplicationFactor);
         readRawInputFile(rawDataFileName, (int)Math.round(Math.pow(2,bitsForNominalEntries)));
         writeToOutputFile(dimValSketchFile, dimValToSketch); //"/Users/vijayrajan/healthcare/SketchFile.txt"
     }
 
-    public static void readInputFile (String fileName, String rawOutputFilename) throws IOException, ParseException {
+    public static void readInputFile (String fileName, String rawOutputFilename, int multiplicationFactor) throws IOException, ParseException {
 
         // Creating an object of BufferedReader class
         File file = new File(fileName);
@@ -66,14 +70,18 @@ public class ExplodeDriveUAggregateWithUUID {
             }
             String tripOutcome = "bad";
             for (int i = 0; i < Integer.parseInt(lineElements[9]); i++) {
-                String realNewLine = UUID.randomUUID().toString() + "," + newLine + tripOutcome + "\n";
-                out.write(realNewLine.getBytes(StandardCharsets.UTF_8) );
+                for (int j = 0; j < multiplicationFactor; j++) {
+                    String realNewLine = UUID.randomUUID().toString() + "," + newLine + tripOutcome + "\n";
+                    out.write(realNewLine.getBytes(StandardCharsets.UTF_8));
+                }
             }
 
             tripOutcome = "good";
             for (int i = 0; i < Integer.parseInt(lineElements[10]); i++) {
-                String realNewLine = UUID.randomUUID().toString() + "," + newLine + tripOutcome + "\n";
-                out.write(realNewLine.getBytes(StandardCharsets.UTF_8) );
+                for (int j = 0; j < multiplicationFactor; j++) {
+                    String realNewLine = UUID.randomUUID().toString() + "," + newLine + tripOutcome + "\n";
+                    out.write(realNewLine.getBytes(StandardCharsets.UTF_8));
+                }
             }
         }
         out.close();

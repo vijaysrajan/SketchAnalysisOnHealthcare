@@ -110,13 +110,13 @@ public class CreateFISFromSketches {
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
             FISObj f1 = firstLevel.get(j);
             dimensionsToAvoidJoins.clear();
-            getConstituentDimVal (f1.getKey(), dimensionsToAvoidJoins);
+            StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins);
             if (f1.getValue().getEstimate() < supportLevel || f1.getKey().equals("")) {
                 continue;
             }
             for (int i = j + 1; i < firstLevel.size(); i++) {
                 FISObj f2 = firstLevel.get(i);
-                if (dimensionsToAvoidJoins.contains(getDimension(f2.getKey()))) {
+                if (dimensionsToAvoidJoins.contains(StaticUtils.getDimension(f2.getKey()))) {
                     //System.out.println(f2.getKey() + " *** " + f1.getKey());
                     continue;
                 }
@@ -162,11 +162,11 @@ public class CreateFISFromSketches {
             if (f1.getKey().equals("")) continue;
                 //avoid intersection between values for the same dimension. This should speed things up much more
                 dimensionsToAvoidJoins.clear();
-                getConstituentDimVal (f1.getKey(), dimensionsToAvoidJoins);
+                StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins);
 
                 for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
                     FISObj f2 = firstLevel.get(i);
-                    if (dimensionsToAvoidJoins.contains(getDimension(f2.getKey()))) {
+                    if (dimensionsToAvoidJoins.contains(StaticUtils.getDimension(f2.getKey()))) {
                         //System.out.println(f2.getKey() + " *** " + f1.getKey());
                         continue;
                     }
@@ -187,25 +187,6 @@ public class CreateFISFromSketches {
                 Math.round((f.getValue().getLowerBound(2))),
                 Math.round((f.getValue().getUpperBound(2)))));
     }
-
-    private static void getConstituentDimVal (String itemSet, HashSet<String> set) {
-        String [] itemSetParts = itemSet.split(" & ", -1);
-        for( String part : itemSetParts) {
-            String s = getDimension(part);
-            if (s != null) {
-                set.add(s);
-            }
-        }
-    }
-    private static String getDimension(String itemSet) {
-        String [] parts = itemSet.split("=", -1);
-        if (parts.length != 2) {
-            return null;
-        } else {
-            return parts[0];
-        }
-    }
-
 
 
 }

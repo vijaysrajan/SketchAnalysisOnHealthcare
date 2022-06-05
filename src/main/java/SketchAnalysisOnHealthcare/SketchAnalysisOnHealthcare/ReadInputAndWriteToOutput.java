@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Base64;
+import java.util.UUID;
 
 import org.apache.datasketches.theta.UpdateSketch;
 
@@ -36,6 +37,7 @@ public class ReadInputAndWriteToOutput {
         if (args.length >= 4) {
             bitsForNominalEntries = Integer.parseInt(args[3]);
         }
+        obfuscate(inputFileName, "/Users/vijayrajan/healthcare/sample_5000_data.csv");
         readInputFile(inputFileName, (int)Math.round(Math.pow(2,bitsForNominalEntries)));
         writeToOutputFile(mainOutputFileName, mapOfDiseaseToSketch); //"/Users/vijayrajan/healthcare/SketchFile.txt"
         writeToOutputFile(simplifiedOutputFileName, mapOfDiseaseToSketchTopLevel); //"/Users/vijayrajan/healthcare/SketchFile.txt"
@@ -62,6 +64,42 @@ public class ReadInputAndWriteToOutput {
             throw new IOException("Couldn't write to file.");
         }
     }
+
+    public static void obfuscate(String inputFileName, String outputFile) throws Exception {
+        File file = new File(inputFileName);
+        BufferedReader br
+                = new BufferedReader(new FileReader(file));
+        FileOutputStream out = new FileOutputStream(outputFile);
+        String st = br.readLine();
+        StringBuilder sb = new StringBuilder();
+        out.write(st.getBytes(StandardCharsets.UTF_8));
+        out.write("\n".getBytes(StandardCharsets.UTF_8));
+        String prevId = "";
+        String uuid = UUID.randomUUID().toString();
+
+        while ((st = br.readLine()) != null) {
+            sb.delete(0,sb.length());
+            String [] lineElements = st.split(",", -1);
+            String id = lineElements[0];
+            if (!id.equalsIgnoreCase(prevId)) {
+                uuid = UUID.randomUUID().toString();
+            }
+            sb.append(uuid);
+            sb.append(",");
+            for (int i = 1; i < lineElements.length; i++) {
+                sb.append(lineElements[i]);
+                if (i != lineElements.length - 1) {
+                    sb.append(",");
+                }
+            }
+            out.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+            out.write("\n".getBytes(StandardCharsets.UTF_8));
+            prevId = id;
+        }
+        out.close();
+        br.close();
+    }
+
     public static void readInputFile (String fileName, int nominalEntries) throws IOException, ParseException {
 
         // Creating an object of BufferedReader class

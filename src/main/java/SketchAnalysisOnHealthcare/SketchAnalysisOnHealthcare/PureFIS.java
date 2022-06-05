@@ -4,6 +4,11 @@ import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
+/*
+  This class is for the FIS of DriveU data where there are
+  two base metrics (goodCnt and badCnt) and
+  two derived metrics (total and badOverTotal)
+ */
 public class PureFIS {
     private int level;
     private String rule;
