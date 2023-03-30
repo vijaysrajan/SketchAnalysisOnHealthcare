@@ -110,7 +110,7 @@ public class CreateFISFromSketches {
         for (int j = 0; j < (firstLevel.size() - 1); j++) {
             FISObj f1 = firstLevel.get(j);
             dimensionsToAvoidJoins.clear();
-            StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins);
+            StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins, " & ");
             if (f1.getValue().getEstimate() < supportLevel || f1.getKey().equals("")) {
                 continue;
             }
@@ -162,7 +162,7 @@ public class CreateFISFromSketches {
             if (f1.getKey().equals("")) continue;
                 //avoid intersection between values for the same dimension. This should speed things up much more
                 dimensionsToAvoidJoins.clear();
-                StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins);
+                StaticUtils.getConstituentDimension(f1.getKey(), dimensionsToAvoidJoins, " & ");
 
                 for (int i = getLargestIndex(f1.getKey()) + 1; i < firstLevel.size(); i++) {
                     FISObj f2 = firstLevel.get(i);

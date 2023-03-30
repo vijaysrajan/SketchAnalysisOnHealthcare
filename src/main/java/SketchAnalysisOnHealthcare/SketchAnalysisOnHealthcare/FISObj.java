@@ -1,6 +1,7 @@
 package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 
 import org.apache.datasketches.theta.Sketch;
+import org.jetbrains.annotations.NotNull;
 
 public class FISObj implements Comparable<FISObj>{
     private final String key;
@@ -18,7 +19,7 @@ public class FISObj implements Comparable<FISObj>{
     }
 
     @Override
-    public int compareTo(FISObj o) {
+    public int compareTo(@NotNull FISObj o) {
         return Double.compare(o.value.getEstimate(), this.value.getEstimate());
     }
 }

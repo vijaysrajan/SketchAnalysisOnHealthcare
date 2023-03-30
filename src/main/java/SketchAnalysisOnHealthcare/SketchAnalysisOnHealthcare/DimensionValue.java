@@ -10,6 +10,14 @@ public class DimensionValue extends java.lang.Object {
         this.value = val.trim();
     }
 
+    public DimensionValue(String fis) {
+        String [] dimAndVal = fis.split("=", -1);
+        String dim = dimAndVal[0];
+        String val = dimAndVal[1];
+        this.dimension = dim.trim();
+        this.value = val.trim();
+    }
+
     public String getDimension() {
         return dimension;
     }

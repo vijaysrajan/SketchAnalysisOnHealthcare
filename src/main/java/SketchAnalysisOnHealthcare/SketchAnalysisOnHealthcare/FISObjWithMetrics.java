@@ -1,5 +1,6 @@
 package SketchAnalysisOnHealthcare.SketchAnalysisOnHealthcare;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 public class FISObjWithMetrics extends java.lang.Object
@@ -81,6 +82,21 @@ public class FISObjWithMetrics extends java.lang.Object
         }
         retVal.delete(retVal.length() -1, retVal.length());
         return retVal.toString();
+    }
+
+    public String reorderKeyLexicoGraphically(String separator) {
+        String [] keys = key.split(separator, -1);
+        ArrayList<String> sortKey = new ArrayList<>();
+        for (String s : keys) {
+            sortKey.add(s);
+        }
+        Collections.sort(sortKey);
+        StringBuilder sb = new StringBuilder();
+        sortKey.forEach( s-> {
+            sb.append(s);
+            sb.append(separator);
+        });
+        return sb.toString();
     }
 
     public static void main(String []  args) {

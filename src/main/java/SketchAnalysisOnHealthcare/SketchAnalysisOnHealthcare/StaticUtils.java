@@ -195,14 +195,27 @@ public class StaticUtils {
         reOrderFISInAFile(args[0], args[1]);
     }
 
-    static void getConstituentDimension(String itemSet, HashSet<String> set) {
-        String [] itemSetParts = itemSet.split(" & ", -1);
+    static void getConstituentDimension(String itemSet, HashSet<String> set, String separator) {
+        String [] itemSetParts = itemSet.split(/*" & "*/ separator, -1);
         for( String part : itemSetParts) {
             String s = getDimension(part);
             if (s != null) {
                 set.add(s);
             }
         }
+    }
+
+    static String getConstituentDimensionSortedAppended(String itemSet, String separator) {
+        ArrayList<String> dimensionsToOrder = new ArrayList<>();
+        String [] itemSetParts = itemSet.split(/*" & "*/ separator, -1);
+        for( String part : itemSetParts) {
+            String s = getDimension(part);
+            if (s != null) {
+                dimensionsToOrder.add(s);
+            }
+        }
+        Collections.sort(dimensionsToOrder);
+        return dimensionsToOrder.toString();
     }
 
     static void getConstituentDimVal(String itemSet, HashSet<String> set, String separator) {
